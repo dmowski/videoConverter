@@ -27,12 +27,12 @@ export async function validateWebMFile(buffer: ArrayBuffer): Promise<VideoValida
 
     // Check WebM/EBML signature (0x1A45DFA3)
     if (buffer.byteLength < 4) {
-      result.errors.push('File too small to be a valid WebM file');
+      result.errors.push("File too small to be a valid WebM file");
       return result;
     }
 
     const signature = view.getUint32(0, false);
-    if (signature !== 0x1A45DFA3) {
+    if (signature !== 0x1a45dfa3) {
       result.errors.push(`Invalid EBML signature: 0x${signature.toString(16)}`);
       return result;
     }
@@ -42,23 +42,24 @@ export async function validateWebMFile(buffer: ArrayBuffer): Promise<VideoValida
     // Parse EBML elements to find codec info
     // This is a simplified parser - full EBML parsing is complex
     const data = new Uint8Array(buffer);
-    
+
     // Look for VP9 codec ID: "V_VP9"
-    const vp9Pattern = [0x56, 0x5F, 0x56, 0x50, 0x39]; // "V_VP9" in ASCII
+    const vp9Pattern = [0x56, 0x5f, 0x56, 0x50, 0x39]; // "V_VP9" in ASCII
     result.hasVP9Codec = searchPattern(data, vp9Pattern);
 
     // Look for audio codec indicators (common ones)
-    const opusPattern = [0x41, 0x5F, 0x4F, 0x50, 0x55, 0x53]; // "A_OPUS"
-    const vorbisPattern = [0x41, 0x5F, 0x56, 0x4F, 0x52, 0x42, 0x49, 0x53]; // "A_VORBIS"
-    
+    const opusPattern = [0x41, 0x5f, 0x4f, 0x50, 0x55, 0x53]; // "A_OPUS"
+    const vorbisPattern = [0x41, 0x5f, 0x56, 0x4f, 0x52, 0x42, 0x49, 0x53]; // "A_VORBIS"
+
     result.hasAudio = searchPattern(data, opusPattern) || searchPattern(data, vorbisPattern);
 
     if (!result.hasVP9Codec) {
-      result.errors.push('VP9 codec not detected in file');
+      result.errors.push("VP9 codec not detected in file");
     }
-
   } catch (error) {
-    result.errors.push(`Validation error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    result.errors.push(
+      `Validation error: ${error instanceof Error ? error.message : "Unknown error"}`,
+    );
   }
 
   return result;

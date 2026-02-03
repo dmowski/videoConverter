@@ -141,7 +141,7 @@ async function handleConvert() {
           convertBtn.disabled = false;
           convertBtn.textContent = "Convert to WebM (VP9)";
         }
-      }
+      },
     );
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : "Unknown error";
@@ -196,4 +196,3 @@ function hideError() {
     errorSection.classList.add("hidden");
   }
 }
-

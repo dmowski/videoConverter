@@ -21,32 +21,32 @@ export class VideoConverter {
   }
 
   private initWorker() {
-    this.worker = new Worker(new URL('./worker.ts', import.meta.url), {
-      type: 'module'
+    this.worker = new Worker(new URL("./worker.ts", import.meta.url), {
+      type: "module",
     });
 
     this.worker.onmessage = (e) => {
       const { type, data } = e.data;
 
       switch (type) {
-        case 'loaded':
-          console.log('FFmpeg loaded successfully');
+        case "loaded":
+          console.log("FFmpeg loaded successfully");
           if (this.loadedResolve) {
             this.loadedResolve();
             this.loadedResolve = undefined;
           }
           break;
-        case 'progress':
+        case "progress":
           if (this.onProgress) {
             this.onProgress(data);
           }
           break;
-        case 'complete':
+        case "complete":
           if (this.onComplete) {
             this.onComplete(data);
           }
           break;
-        case 'error':
+        case "error":
           if (this.loadedReject && !this.loadedResolve) {
             // Loading error
             this.loadedReject(new Error(data.message));
@@ -60,12 +60,12 @@ export class VideoConverter {
     };
 
     this.worker.onerror = (error) => {
-      console.error('Worker error:', error);
+      console.error("Worker error:", error);
       if (this.loadedReject && !this.loadedResolve) {
         this.loadedReject(error instanceof Error ? error : new Error(String(error)));
         this.loadedReject = undefined;
       } else if (this.onError) {
-        this.onError('Worker error: ' + (error instanceof Error ? error.message : String(error)));
+        this.onError("Worker error: " + (error instanceof Error ? error.message : String(error)));
       }
     };
   }
@@ -73,7 +73,7 @@ export class VideoConverter {
   async load() {
     return new Promise<void>((resolve, reject) => {
       if (!this.worker) {
-        reject(new Error('Worker not initialized'));
+        reject(new Error("Worker not initialized"));
         return;
       }
 
@@ -84,7 +84,7 @@ export class VideoConverter {
       const timeout = setTimeout(() => {
         this.loadedResolve = undefined;
         this.loadedReject = undefined;
-        reject(new Error('FFmpeg loading timed out'));
+        reject(new Error("FFmpeg loading timed out"));
       }, 30000);
 
       // Override resolvers to clear timeout
@@ -104,7 +104,7 @@ export class VideoConverter {
         originalReject(error);
       };
 
-      this.worker.postMessage({ type: 'load' });
+      this.worker.postMessage({ type: "load" });
     });
   }
 
@@ -112,14 +112,14 @@ export class VideoConverter {
     file: File,
     onProgress: (progress: ConversionProgress) => void,
     onComplete: (result: ConversionResult) => void,
-    onError: (error: string) => void
+    onError: (error: string) => void,
   ) {
     this.onProgress = onProgress;
     this.onComplete = onComplete;
     this.onError = onError;
 
     if (!this.worker) {
-      onError('Worker not initialized');
+      onError("Worker not initialized");
       return;
     }
 
@@ -130,14 +130,14 @@ export class VideoConverter {
 
       // Send to worker
       this.worker.postMessage({
-        type: 'convert',
+        type: "convert",
         data: {
           videoData,
-          videoName: file.name
-        }
+          videoName: file.name,
+        },
       });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to read file';
+      const errorMessage = error instanceof Error ? error.message : "Failed to read file";
       onError(errorMessage);
     }
   }
