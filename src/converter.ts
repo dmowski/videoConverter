@@ -15,6 +15,8 @@ export class VideoConverter {
   private onError?: (error: string) => void;
   private loadedResolve?: () => void;
   private loadedReject?: (error: Error) => void;
+  private isLoaded = false;
+  private loadPromise: Promise<void> | null = null;
 
   constructor() {
     this.initWorker();
@@ -31,6 +33,7 @@ export class VideoConverter {
       switch (type) {
         case "loaded":
           console.log("FFmpeg loaded successfully");
+          this.isLoaded = true;
           if (this.loadedResolve) {
             this.loadedResolve();
             this.loadedResolve = undefined;
@@ -47,12 +50,15 @@ export class VideoConverter {
           }
           break;
         case "error":
-          if (this.loadedReject && !this.loadedResolve) {
+          console.error("[VideoConverter] Error:", data.message);
+          if (!this.isLoaded && this.loadedReject) {
             // Loading error
+            console.error("[VideoConverter] Loading error");
             this.loadedReject(new Error(data.message));
             this.loadedReject = undefined;
           } else if (this.onError) {
             // Conversion error
+            console.error("[VideoConverter] Conversion error");
             this.onError(data.message);
           }
           break;
@@ -60,18 +66,26 @@ export class VideoConverter {
     };
 
     this.worker.onerror = (error) => {
-      console.error("Worker error:", error);
-      if (this.loadedReject && !this.loadedResolve) {
+      console.error("[Worker Error]:", error);
+      if (!this.isLoaded && this.loadedReject) {
+        console.error("[Worker Error] During load phase");
         this.loadedReject(error instanceof Error ? error : new Error(String(error)));
         this.loadedReject = undefined;
       } else if (this.onError) {
+        console.error("[Worker Error] During conversion phase");
         this.onError("Worker error: " + (error instanceof Error ? error.message : String(error)));
       }
     };
   }
 
   async load() {
-    return new Promise<void>((resolve, reject) => {
+    // If already loading, return the same promise
+    if (this.loadPromise) {
+      return this.loadPromise;
+    }
+
+    // Create the load promise
+    this.loadPromise = new Promise<void>((resolve, reject) => {
       if (!this.worker) {
         reject(new Error("Worker not initialized"));
         return;
@@ -84,6 +98,7 @@ export class VideoConverter {
       const timeout = setTimeout(() => {
         this.loadedResolve = undefined;
         this.loadedReject = undefined;
+        this.loadPromise = null;
         reject(new Error("FFmpeg loading timed out"));
       }, 30000);
 
@@ -101,11 +116,14 @@ export class VideoConverter {
         clearTimeout(timeout);
         this.loadedResolve = undefined;
         this.loadedReject = undefined;
+        this.loadPromise = null;
         originalReject(error);
       };
 
       this.worker.postMessage({ type: "load" });
     });
+
+    return this.loadPromise;
   }
 
   async convert(
@@ -114,6 +132,21 @@ export class VideoConverter {
     onComplete: (result: ConversionResult) => void,
     onError: (error: string) => void,
   ) {
+    // CRITICAL: Wait for FFmpeg to be loaded before converting
+    try {
+      if (!this.isLoaded && this.loadPromise) {
+        console.log("[VideoConverter] Waiting for FFmpeg to load before converting...");
+        await this.loadPromise;
+      } else if (!this.isLoaded) {
+        throw new Error("FFmpeg is not loaded");
+      }
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : "Failed to load FFmpeg";
+      console.error("[VideoConverter] Convert waiting for load failed:", errorMsg);
+      onError(errorMsg);
+      return;
+    }
+
     this.onProgress = onProgress;
     this.onComplete = onComplete;
     this.onError = onError;

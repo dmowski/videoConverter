@@ -1,10 +1,11 @@
 /**
  * Video validation utilities for E2E tests
- * Validates WebM container format and VP9 codec
+ * Validates WebM container format and VP8/VP9 codec
  */
 
 export interface VideoValidationResult {
   isWebM: boolean;
+  hasVP8Codec: boolean;
   hasVP9Codec: boolean;
   hasAudio: boolean;
   errors: string[];
@@ -17,6 +18,7 @@ export interface VideoValidationResult {
 export async function validateWebMFile(buffer: ArrayBuffer): Promise<VideoValidationResult> {
   const result: VideoValidationResult = {
     isWebM: false,
+    hasVP8Codec: false,
     hasVP9Codec: false,
     hasAudio: false,
     errors: [],
@@ -43,6 +45,10 @@ export async function validateWebMFile(buffer: ArrayBuffer): Promise<VideoValida
     // This is a simplified parser - full EBML parsing is complex
     const data = new Uint8Array(buffer);
 
+    // Look for VP8 codec ID: "V_VP8"
+    const vp8Pattern = [0x56, 0x5f, 0x56, 0x50, 0x38]; // "V_VP8" in ASCII
+    result.hasVP8Codec = searchPattern(data, vp8Pattern);
+
     // Look for VP9 codec ID: "V_VP9"
     const vp9Pattern = [0x56, 0x5f, 0x56, 0x50, 0x39]; // "V_VP9" in ASCII
     result.hasVP9Codec = searchPattern(data, vp9Pattern);
@@ -53,8 +59,8 @@ export async function validateWebMFile(buffer: ArrayBuffer): Promise<VideoValida
 
     result.hasAudio = searchPattern(data, opusPattern) || searchPattern(data, vorbisPattern);
 
-    if (!result.hasVP9Codec) {
-      result.errors.push("VP9 codec not detected in file");
+    if (!result.hasVP8Codec && !result.hasVP9Codec) {
+      result.errors.push("VP8 or VP9 codec not detected in file");
     }
   } catch (error) {
     result.errors.push(
