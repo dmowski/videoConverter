@@ -45,7 +45,7 @@ test.describe("Phase 2: Video Format Validation", () => {
     expect(validation.errors).toHaveLength(0);
   });
 
-  test("should use VP8 or VP9 video codec", async ({ page }) => {
+  test("should use VP8 or VP9 video codec", async () => {
     // Skip if output file doesn't exist from previous test
     if (!fs.existsSync(outputPath)) {
       test.skip();
@@ -58,7 +58,7 @@ test.describe("Phase 2: Video Format Validation", () => {
     expect(validation.hasVP8Codec || validation.hasVP9Codec).toBeTruthy();
   });
 
-  test("should have no audio stream", async ({ page }) => {
+  test("should have no audio stream", async () => {
     // Skip if output file doesn't exist from previous test
     if (!fs.existsSync(outputPath)) {
       test.skip();
@@ -71,7 +71,7 @@ test.describe("Phase 2: Video Format Validation", () => {
     expect(validation.hasAudio).toBeFalsy();
   });
 
-  test("should match expected FFmpeg parameters", async ({ page }) => {
+  test("should match expected FFmpeg parameters", async () => {
     // This test verifies the overall conversion matches our requirements
     if (!fs.existsSync(outputPath)) {
       test.skip();

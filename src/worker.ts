@@ -14,7 +14,7 @@ interface WorkerMessage {
 
 interface WorkerResponse {
   type: "loaded" | "progress" | "complete" | "error";
-  data?: any;
+  data?: unknown;
 }
 
 self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
@@ -112,7 +112,7 @@ async function loadFFmpeg() {
   }
 }
 
-async function convertVideo(videoData: Uint8Array, videoName: string) {
+async function convertVideo(videoData: Uint8Array, _videoName: string) {
   console.log("[Worker] convertVideo called, video size:", videoData.byteLength);
 
   if (!ffmpeg) {
