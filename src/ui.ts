@@ -12,6 +12,8 @@ export interface UIElements {
   progressSection: HTMLDivElement | null;
   progressBar: HTMLDivElement | null;
   progressText: HTMLParagraphElement | null;
+  progressPhase: HTMLParagraphElement | null;
+  progressEta: HTMLParagraphElement | null;
   cancelBtn: HTMLButtonElement | null;
   downloadSection: HTMLDivElement | null;
   downloadBtn: HTMLButtonElement | null;
@@ -30,6 +32,8 @@ export function getUIElements(): UIElements {
     progressSection: document.querySelector<HTMLDivElement>("#progress-section"),
     progressBar: document.querySelector<HTMLDivElement>("#progress-bar"),
     progressText: document.querySelector<HTMLParagraphElement>("#progress-text"),
+    progressPhase: document.querySelector<HTMLParagraphElement>("#progress-phase"),
+    progressEta: document.querySelector<HTMLParagraphElement>("#progress-eta"),
     cancelBtn: document.querySelector<HTMLButtonElement>("#cancel-btn"),
     downloadSection: document.querySelector<HTMLDivElement>("#download-section"),
     downloadBtn: document.querySelector<HTMLButtonElement>("#download-btn"),
@@ -69,9 +73,22 @@ export function hideError(elements: UIElements): void {
 export function updateProgress(elements: UIElements, progress: number): void {
   if (elements.progressBar) {
     elements.progressBar.style.width = `${progress}%`;
+    elements.progressBar.setAttribute("aria-valuenow", String(progress));
   }
   if (elements.progressText) {
     elements.progressText.textContent = `${progress}%`;
+  }
+}
+
+export function setProgressPhase(elements: UIElements, message: string): void {
+  if (elements.progressPhase) {
+    elements.progressPhase.textContent = message;
+  }
+}
+
+export function setProgressEta(elements: UIElements, message: string): void {
+  if (elements.progressEta) {
+    elements.progressEta.textContent = message;
   }
 }
 
@@ -117,12 +134,11 @@ export function setConvertBtnState(elements: UIElements, state: "idle" | "loadin
   }
 }
 
-export function displayVideoInfo(elements: UIElements, file: File): void {
+export function displayVideoInfo(elements: UIElements, file: File, sizeLabel: string): void {
   if (elements.videoInfo) {
-    const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
     elements.videoInfo.innerHTML = `
       <p><strong>File:</strong> ${file.name}</p>
-      <p><strong>Size:</strong> ${sizeMB} MB</p>
+      <p><strong>Size:</strong> ${sizeLabel}</p>
       <p><strong>Type:</strong> ${file.type}</p>
     `;
   }

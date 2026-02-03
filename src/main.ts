@@ -10,9 +10,16 @@ import {
   setDropZoneActive,
   setCancelEnabled,
   setConvertBtnState,
+  setProgressEta,
+  setProgressPhase,
   displayVideoInfo,
 } from "./ui";
-import { isValidVideoFile, createPreviewURL, displayVideoPreview } from "./fileHandler";
+import {
+  createPreviewURL,
+  displayVideoPreview,
+  formatFileSize,
+  validateVideoFile,
+} from "./fileHandler";
 import { handleConvert, handleDownload } from "./conversionManager";
 
 // Initialize app
@@ -104,6 +111,8 @@ function handleCancel(): void {
   setCancelEnabled(elements, false);
   setConvertBtnState(elements, "idle");
   hideDownload(elements);
+  setProgressPhase(elements, "Conversion canceled");
+  setProgressEta(elements, "");
   showError(elements, "Conversion canceled.");
   converter.load().catch((error) => {
     console.error("Failed to reload FFmpeg after cancel:", error);
@@ -115,8 +124,9 @@ function processSelectedFile(file: File): void {
   if (!file) return;
 
   // Validate file type
-  if (!isValidVideoFile(file)) {
-    showError(elements, "Please select a valid video file.");
+  const validation = validateVideoFile(file);
+  if (!validation.isValid) {
+    showError(elements, validation.error || "Invalid video file.");
     return;
   }
 
@@ -127,6 +137,7 @@ function processSelectedFile(file: File): void {
   hideDownload(elements);
   hideProgress(elements);
   setCancelEnabled(elements, false);
+  setProgressEta(elements, "");
 
   // Show preview section
   showPreview(elements);
@@ -136,5 +147,5 @@ function processSelectedFile(file: File): void {
   displayVideoPreview(elements.videoPreview, url);
 
   // Display file info
-  displayVideoInfo(elements, file);
+  displayVideoInfo(elements, file, formatFileSize(file.size));
 }

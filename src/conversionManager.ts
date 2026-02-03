@@ -10,6 +10,8 @@ import {
   hideProgress,
   setConvertBtnState,
   setCancelEnabled,
+  setProgressEta,
+  setProgressPhase,
   showDownload,
   showError,
   showProgress,
@@ -43,6 +45,10 @@ export async function handleConvert(
 
   // Reset progress
   updateProgress(elements, 0);
+  setProgressPhase(elements, "Preparing conversion...");
+  setProgressEta(elements, "Estimating time remaining...");
+
+  const startTime = Date.now();
 
   try {
     await converter.convert(
@@ -50,6 +56,7 @@ export async function handleConvert(
       // onProgress
       (progress) => {
         updateProgress(elements, progress.progress);
+        updatePhaseAndEta(elements, progress.progress, startTime);
       },
       // onComplete
       (result) => {
@@ -65,6 +72,8 @@ export async function handleConvert(
         // Re-enable convert button
         setConvertBtnState(elements, "idle");
         setCancelEnabled(elements, false);
+        setProgressPhase(elements, "Conversion complete");
+        setProgressEta(elements, "");
 
         // Notify completion
         onConversionComplete(convertedBlob);
@@ -75,6 +84,7 @@ export async function handleConvert(
         hideProgress(elements);
         setConvertBtnState(elements, "idle");
         setCancelEnabled(elements, false);
+        setProgressEta(elements, "");
       },
     );
   } catch (error) {
@@ -83,6 +93,31 @@ export async function handleConvert(
     hideProgress(elements);
     setConvertBtnState(elements, "idle");
     setCancelEnabled(elements, false);
+    setProgressEta(elements, "");
+  }
+}
+
+function updatePhaseAndEta(elements: UIElements, progress: number, startTime: number): void {
+  if (progress < 5) {
+    setProgressPhase(elements, "Initializing encoder...");
+  } else if (progress < 25) {
+    setProgressPhase(elements, "Analyzing video...");
+  } else if (progress < 75) {
+    setProgressPhase(elements, "Encoding frames...");
+  } else if (progress < 95) {
+    setProgressPhase(elements, "Finalizing output...");
+  } else {
+    setProgressPhase(elements, "Wrapping up...");
+  }
+
+  if (progress > 0) {
+    const elapsedMs = Date.now() - startTime;
+    const remainingMs = Math.max((elapsedMs / progress) * (100 - progress), 0);
+    const remainingSec = Math.ceil(remainingMs / 1000);
+    const minutes = Math.floor(remainingSec / 60);
+    const seconds = remainingSec % 60;
+    const label = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
+    setProgressEta(elements, `Estimated time remaining: ${label}`);
   }
 }
 
