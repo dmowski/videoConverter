@@ -8,10 +8,7 @@ export function setCancelEnabled(elements: UIElements, enabled: boolean): void {
   elements.cancelBtn.classList.toggle("cursor-not-allowed", !enabled);
 }
 
-export function setConvertBtnState(
-  elements: UIElements,
-  state: "idle" | "loading",
-): void {
+export function setConvertBtnState(elements: UIElements, state: "idle" | "loading"): void {
   if (!elements.convertBtn) return;
 
   if (state === "loading") {
