@@ -9,6 +9,7 @@ import {
   hideError,
   hideProgress,
   setConvertBtnState,
+  setCancelEnabled,
   showDownload,
   showError,
   showProgress,
@@ -35,6 +36,7 @@ export async function handleConvert(
 
   // Show progress section
   showProgress(elements);
+  setCancelEnabled(elements, true);
 
   // Hide download section
   hideDownload(elements);
@@ -62,6 +64,7 @@ export async function handleConvert(
 
         // Re-enable convert button
         setConvertBtnState(elements, "idle");
+        setCancelEnabled(elements, false);
 
         // Notify completion
         onConversionComplete(convertedBlob);
@@ -71,6 +74,7 @@ export async function handleConvert(
         showError(elements, `Conversion failed: ${error}`);
         hideProgress(elements);
         setConvertBtnState(elements, "idle");
+        setCancelEnabled(elements, false);
       },
     );
   } catch (error) {
@@ -78,6 +82,7 @@ export async function handleConvert(
     showError(elements, `Conversion failed: ${errorMsg}`);
     hideProgress(elements);
     setConvertBtnState(elements, "idle");
+    setCancelEnabled(elements, false);
   }
 }
 

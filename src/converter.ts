@@ -181,4 +181,18 @@ export class VideoConverter {
       this.worker = null;
     }
   }
+
+  cancel() {
+    if (this.worker) {
+      this.worker.terminate();
+      this.worker = null;
+    }
+
+    this.isLoaded = false;
+    this.loadPromise = null;
+    this.loadedResolve = undefined;
+    this.loadedReject = undefined;
+
+    this.initWorker();
+  }
 }

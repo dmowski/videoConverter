@@ -4,6 +4,7 @@
 
 export interface UIElements {
   videoInput: HTMLInputElement | null;
+  dropZone: HTMLDivElement | null;
   previewSection: HTMLDivElement | null;
   videoPreview: HTMLVideoElement | null;
   videoInfo: HTMLDivElement | null;
@@ -11,6 +12,7 @@ export interface UIElements {
   progressSection: HTMLDivElement | null;
   progressBar: HTMLDivElement | null;
   progressText: HTMLParagraphElement | null;
+  cancelBtn: HTMLButtonElement | null;
   downloadSection: HTMLDivElement | null;
   downloadBtn: HTMLButtonElement | null;
   errorSection: HTMLDivElement | null;
@@ -20,6 +22,7 @@ export interface UIElements {
 export function getUIElements(): UIElements {
   return {
     videoInput: document.querySelector<HTMLInputElement>("#video-input"),
+    dropZone: document.querySelector<HTMLDivElement>("#drop-zone"),
     previewSection: document.querySelector<HTMLDivElement>("#preview-section"),
     videoPreview: document.querySelector<HTMLVideoElement>("#video-preview"),
     videoInfo: document.querySelector<HTMLDivElement>("#video-info"),
@@ -27,6 +30,7 @@ export function getUIElements(): UIElements {
     progressSection: document.querySelector<HTMLDivElement>("#progress-section"),
     progressBar: document.querySelector<HTMLDivElement>("#progress-bar"),
     progressText: document.querySelector<HTMLParagraphElement>("#progress-text"),
+    cancelBtn: document.querySelector<HTMLButtonElement>("#cancel-btn"),
     downloadSection: document.querySelector<HTMLDivElement>("#download-section"),
     downloadBtn: document.querySelector<HTMLButtonElement>("#download-btn"),
     errorSection: document.querySelector<HTMLDivElement>("#error-section"),
@@ -41,6 +45,19 @@ export function showError(elements: UIElements, message: string): void {
   if (elements.errorMessage) {
     elements.errorMessage.textContent = message;
   }
+}
+
+export function setDropZoneActive(elements: UIElements, isActive: boolean): void {
+  if (!elements.dropZone) return;
+  elements.dropZone.classList.toggle("border-blue-500", isActive);
+  elements.dropZone.classList.toggle("bg-blue-50", isActive);
+}
+
+export function setCancelEnabled(elements: UIElements, enabled: boolean): void {
+  if (!elements.cancelBtn) return;
+  elements.cancelBtn.disabled = !enabled;
+  elements.cancelBtn.classList.toggle("opacity-50", !enabled);
+  elements.cancelBtn.classList.toggle("cursor-not-allowed", !enabled);
 }
 
 export function hideError(elements: UIElements): void {
