@@ -12,6 +12,8 @@ import {
   setConvertBtnState,
   setProgressEta,
   setProgressPhase,
+  updateProgress,
+  setErrorHint,
   displayVideoInfo,
 } from "./ui";
 import {
@@ -70,6 +72,7 @@ if (elements.cancelBtn) {
 converter.load().catch((error) => {
   console.error("Failed to load FFmpeg:", error);
   showError(elements, "Failed to load video converter. Please refresh the page.");
+  setErrorHint(elements, "If this persists, check your network connection or try again later.");
 });
 
 function handleFileSelect(event: Event): void {
@@ -114,9 +117,11 @@ function handleCancel(): void {
   setProgressPhase(elements, "Conversion canceled");
   setProgressEta(elements, "");
   showError(elements, "Conversion canceled.");
+  setErrorHint(elements, "You can choose another file and try again.");
   converter.load().catch((error) => {
     console.error("Failed to reload FFmpeg after cancel:", error);
     showError(elements, "Failed to reload converter. Please refresh the page.");
+    setErrorHint(elements, "A page refresh may be required to recover.");
   });
 }
 
@@ -127,6 +132,7 @@ function processSelectedFile(file: File): void {
   const validation = validateVideoFile(file);
   if (!validation.isValid) {
     showError(elements, validation.error || "Invalid video file.");
+    setErrorHint(elements, "Try a different file or a smaller size.");
     return;
   }
 
@@ -138,6 +144,8 @@ function processSelectedFile(file: File): void {
   hideProgress(elements);
   setCancelEnabled(elements, false);
   setProgressEta(elements, "");
+  setProgressPhase(elements, "Ready to convert");
+  updateProgress(elements, 0);
 
   // Show preview section
   showPreview(elements);

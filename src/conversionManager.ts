@@ -10,6 +10,7 @@ import {
   hideProgress,
   setConvertBtnState,
   setCancelEnabled,
+  setErrorHint,
   setProgressEta,
   setProgressPhase,
   showDownload,
@@ -81,6 +82,7 @@ export async function handleConvert(
       // onError
       (error) => {
         showError(elements, `Conversion failed: ${error}`);
+        setErrorHint(elements, "Try again or use a smaller file.");
         hideProgress(elements);
         setConvertBtnState(elements, "idle");
         setCancelEnabled(elements, false);
@@ -90,6 +92,7 @@ export async function handleConvert(
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : "Unknown error";
     showError(elements, `Conversion failed: ${errorMsg}`);
+    setErrorHint(elements, "Try again or refresh the page if it keeps failing.");
     hideProgress(elements);
     setConvertBtnState(elements, "idle");
     setCancelEnabled(elements, false);

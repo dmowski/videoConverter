@@ -19,6 +19,7 @@ export interface UIElements {
   downloadBtn: HTMLButtonElement | null;
   errorSection: HTMLDivElement | null;
   errorMessage: HTMLParagraphElement | null;
+  errorHint: HTMLParagraphElement | null;
 }
 
 export function getUIElements(): UIElements {
@@ -39,6 +40,7 @@ export function getUIElements(): UIElements {
     downloadBtn: document.querySelector<HTMLButtonElement>("#download-btn"),
     errorSection: document.querySelector<HTMLDivElement>("#error-section"),
     errorMessage: document.querySelector<HTMLParagraphElement>("#error-message"),
+    errorHint: document.querySelector<HTMLParagraphElement>("#error-hint"),
   };
 }
 
@@ -51,6 +53,12 @@ export function showError(elements: UIElements, message: string): void {
   }
 }
 
+export function setErrorHint(elements: UIElements, message: string): void {
+  if (elements.errorHint) {
+    elements.errorHint.textContent = message;
+  }
+}
+
 export function setDropZoneActive(elements: UIElements, isActive: boolean): void {
   if (!elements.dropZone) return;
   elements.dropZone.classList.toggle("border-blue-500", isActive);
@@ -60,6 +68,7 @@ export function setDropZoneActive(elements: UIElements, isActive: boolean): void
 export function setCancelEnabled(elements: UIElements, enabled: boolean): void {
   if (!elements.cancelBtn) return;
   elements.cancelBtn.disabled = !enabled;
+  elements.cancelBtn.setAttribute("aria-disabled", String(!enabled));
   elements.cancelBtn.classList.toggle("opacity-50", !enabled);
   elements.cancelBtn.classList.toggle("cursor-not-allowed", !enabled);
 }
@@ -67,6 +76,12 @@ export function setCancelEnabled(elements: UIElements, enabled: boolean): void {
 export function hideError(elements: UIElements): void {
   if (elements.errorSection) {
     elements.errorSection.classList.add("hidden");
+  }
+  if (elements.errorMessage) {
+    elements.errorMessage.textContent = "";
+  }
+  if (elements.errorHint) {
+    elements.errorHint.textContent = "";
   }
 }
 
@@ -127,9 +142,11 @@ export function setConvertBtnState(elements: UIElements, state: "idle" | "loadin
 
   if (state === "loading") {
     elements.convertBtn.disabled = true;
+    elements.convertBtn.setAttribute("aria-disabled", "true");
     elements.convertBtn.textContent = "Converting...";
   } else {
     elements.convertBtn.disabled = false;
+    elements.convertBtn.setAttribute("aria-disabled", "false");
     elements.convertBtn.textContent = "Convert to WebM (VP9)";
   }
 }
