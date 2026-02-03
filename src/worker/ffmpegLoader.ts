@@ -47,9 +47,9 @@ export async function loadFFmpeg(): Promise<void> {
       } as WorkerResponse);
     });
 
-    // Load FFmpeg core from CDN
-    const baseURL = "https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/esm";
-    console.log("[Worker] Resolving FFmpeg core URLs from:", baseURL);
+    // Load FFmpeg core from local service
+    const baseURL = "/ffmpeg";
+    console.log("[Worker] Loading FFmpeg core from local service:", baseURL);
 
     const coreURL = await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript");
     console.log("[Worker] Core JS URL resolved");

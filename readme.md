@@ -126,7 +126,7 @@ videoConverter/
 │   ├── worker/
 │   │   ├── types.ts            # Worker message interfaces
 │   │   ├── state.ts            # FFmpeg instance state
-│   │   ├── ffmpegLoader.ts     # FFmpeg initialization
+│   │   ├── ffmpegLoader.ts     # FFmpeg initialization (local service)
 │   │   └── conversion.ts       # Video conversion logic
 │   └── ui/                     # Modular UI components
 │       ├── elements.ts         # DOM element references
@@ -136,6 +136,10 @@ videoConverter/
 │       ├── dropZone.ts         # Drag-drop styling
 │       ├── sections.ts         # Section visibility
 │       └── videoInfo.ts        # Video metadata display
+├── public/
+│   └── ffmpeg/                 # FFmpeg.wasm core files (local service)
+│       ├── ffmpeg-core.js      # JavaScript bindings (~112KB)
+│       └── ffmpeg-core.wasm    # WebAssembly binary (~31MB)
 ├── tests/
 │   └── e2e/                    # Playwright e2e tests
 ├── index.html                  # Main HTML file
@@ -155,9 +159,10 @@ videoConverter/
 
 **FFmpegLoader** (`src/worker/ffmpegLoader.ts`)
 
-- Loads FFmpeg.wasm from CDN with blob URL resolution
+- Loads FFmpeg.wasm from local service (`/public/ffmpeg/`) with blob URL resolution
 - Manages initialization state and timeouts
 - Reports progress events
+- Works in both development and production environments
 
 **ConversionManager** (`src/conversionManager.ts`)
 
@@ -175,9 +180,12 @@ videoConverter/
 ## Performance Notes ⚡
 
 - **FFmpeg Loading:** ~5-10 seconds on first load (cached by browser)
+  - Served from local service (`/public/ffmpeg/`) - no CDN latency
+  - ~31MB WASM binary cached after first access
 - **Conversion Speed:** Depends on video size and device (typical: 30-60 seconds for 5-second test video)
 - **Memory Efficient:** Uses Web Workers to keep UI responsive
 - **SharedArrayBuffer:** Enabled via COOP/COEP headers for optimal performance
+- **Offline Ready:** Works offline after first FFmpeg load (WASM files cached locally)
 
 ## Browser Support 🌐
 
